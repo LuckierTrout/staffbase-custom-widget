@@ -1,0 +1,9 @@
+{
+  "id": "synthetic-media-example-not-a-live-response",
+  "contents": {
+    "en_US": {
+      "title": "Illustrative media associations",
+      "content": "<p>Example story with a photo and a video.</p><staffbase-custom-widget taxonomy-id=\"CVX-2026-001\" media-taxonomies=\"[{&quot;mediaId&quot;: &quot;example-photo-id&quot;, &quot;taxonomyId&quot;: &quot;CVX-PHOTO-001&quot;}, {&quot;mediaId&quot;: &quot;example-video-id&quot;, &quot;taxonomyId&quot;: &quot;CVX-VIDEO-001&quot;}]\"></staffbase-custom-widget>"
+    }
+  }
+}

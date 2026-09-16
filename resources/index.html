@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chevron Content Details · Local preview</title>
+    <style>
+      * { box-sizing: border-box; }
+      body { margin: 0; padding: 36px; background: #f3f5f7; color: #243746; font: 16px/1.5 Arial, sans-serif; }
+      main { max-width: 1200px; margin: auto; }
+      h1 { color: #0b2d71; margin: 0 0 8px; } h2 { font-size: 20px; }
+      .columns { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 28px; align-items: start; }
+      .box { background: white; padding: 24px; border: 1px solid #d5dce3; border-radius: 8px; margin-bottom: 20px; }
+      .muted { color: #526474; font-size: 14px; }
+      #preview p { margin: 0; } #preview { border-top: 1px solid #d5dce3; border-bottom: 1px solid #d5dce3; padding: 16px 0; }
+      pre { white-space: pre-wrap; overflow-wrap: anywhere; background: #f3f5f7; padding: 16px; font-size: 13px; }
+      button { background: #0b2d71; color: white; padding: 10px 16px; border: 0; border-radius: 4px; cursor: pointer; font: inherit; }
+      @media (max-width: 800px) { body { padding: 20px; } .columns { grid-template-columns: 1fr; } }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Chevron Content Details</h1>
+      <p>Attach a taxonomy ID to a story or page without displaying it to readers.</p>
+      <div class="columns">
+        <section id="config" class="box" aria-label="Widget settings"></section>
+        <div>
+          <section class="box">
+            <h2>Editor preview</h2>
+            <p class="muted">The widget stays visible and selectable while editing.</p>
+            <div id="editor-preview"><staffbase-custom-widget></staffbase-custom-widget></div>
+          </section>
+          <section class="box">
+            <h2>Reader preview</h2>
+            <p class="muted">The two paragraphs below should touch normally, with no widget or extra gap between them.</p>
+            <div id="preview"><p>Story content before the widget.</p><staffbase-custom-widget></staffbase-custom-widget><p>Story content after the widget.</p></div>
+          </section>
+        </div>
+      </div>
+    </main>
+    <script src="bootstrap.js"></script>
+    <script src="chevron.staffbase-custom-widget.js"></script>
+  </body>
+</html>

@@ -1,0 +1,13 @@
+{
+  "id": "synthetic-example-not-a-live-staffbase-response",
+  "contents": {
+    "en_US": {
+      "title": "Example story",
+      "content": "<p>Story text.</p><staffbase-custom-widget taxonomy-id=\"CVX-2026-001\"></staffbase-custom-widget>"
+    },
+    "es_ES": {
+      "title": "Ejemplo",
+      "content": "<staffbase-custom-widget taxonomy-id=\"CVX-2026-001\"></staffbase-custom-widget><p>Texto.</p>"
+    }
+  }
+}
