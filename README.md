@@ -2,7 +2,7 @@
 
 A Staffbase custom widget for **news stories and pages**. Editors enter a Taxonomy ID in widget settings; readers see no widget content. The value is stored as the widget's `taxonomy-id` HTML attribute for extraction from a content API response.
 
-**Status:** implemented and verified locally. Hosting, Staffbase installation, and live News/Pages API persistence have not been verified. Email is outside this version's scope.
+**Status:** implemented and verified locally. The configuration dialog has been observed in Staffbase Studio. Saving/reopening, reader rendering, and live News/Pages API persistence still need verification. Email is outside this version's scope.
 
 ## Local preview
 
@@ -26,41 +26,7 @@ In the published view, the widget hides its host and clears its rendering contai
 
 This is visually hidden metadata, not confidential storage. Readers with access to the content may inspect its underlying HTML. Do not enter secrets.
 
-## Tag individual photos/videos within a story
-
-The same widget now includes an optional **Photos and videos in this story** list. The existing required **Taxonomy ID** still tags the story/page. For each media entry:
-
-1. Add the photo/video to the story using Staffbase's normal media tools.
-2. Obtain that uploaded file's actual Media ID from an authorized Media API response. A filename, CDN URL, or external video URL is not a Media ID.
-3. Open **Chevron Content Details**, add an entry, and enter **Staffbase Media ID** and **Media Taxonomy ID**.
-4. Add more entries for other assets, then save. Remove an entry if you remove that media from the story.
-
-Use one entry per Media ID in each language version. Exact duplicate rows are rejected by the form. If the same Media ID is entered with different taxonomy values, the editor preview warns and the extraction helper rejects the ambiguous mapping.
-
-These associations belong to the current story/page only. They do not change the file's global metadata or automatically follow it elsewhere. Both IDs are entered manually; this version has no media picker and does not verify that the asset exists or is used in the story. Two occurrences of the same file in one story share one mapping. Externally embedded media without a Staffbase Media ID needs a separate identifier approach.
-
-Media entries are saved as JSON in the `media-taxonomies` attribute. The widget's explicit serialization preserves strings and escapes quotes through normal HTML attribute serialization. The extraction output now includes `mediaTaxonomies`, including an empty array for older widgets without media entries:
-
-```json
-[
-  {
-    "language": "en_US",
-    "taxonomyId": "CVX-2026-001",
-    "mediaTaxonomies": [
-      { "mediaId": "example-photo-id", "taxonomyId": "CVX-PHOTO-001" },
-      { "mediaId": "example-video-id", "taxonomyId": "CVX-VIDEO-001" }
-    ]
-  }
-]
-```
-
-Try the explicitly synthetic example:
-
-```sh
-npm run extract:metadata -- examples/media-content-response.json
-```
-
-For live acceptance, add a real photo and video, enter their IDs and distinct taxonomy values, save/reopen, and confirm both pairs survive in the story/page API response. Change one pair and remove the other; confirm the next API response and helper output reflect both edits. Verify the reader view stays empty. This API persistence remains unverified until tested in Staffbase.
+Photo/video taxonomy tagging is deferred. This version exposes only the story/page Taxonomy ID.
 
 ## Build and install
 
@@ -69,6 +35,19 @@ npm run build
 ```
 
 Output: `dist/chevron.staffbase-custom-widget.js`.
+
+### Hosted script
+
+Use this HTTPS URL in Staffbase custom widget settings:
+
+https://luckiertrout.github.io/staffbase-custom-widget/chevron.staffbase-custom-widget.js
+
+The repository publishes the checked-in `docs/` folder through GitHub Pages.
+To deploy an update, run `npm run build`, copy the generated JavaScript and its
+`.LICENSE.txt` companion from `dist/` into `docs/`, then commit and push the source
+and those files together. The hosted URL updates when the Pages deployment finishes.
+The older `v1.0.0-preview.1` release contains media-tagging functionality that is
+not part of this version.
 
 Host the generated bundle at an HTTPS URL reachable by Staffbase readers, and install that URL under custom widgets in Staffbase Studio. Custom widgets must be enabled for your organization. For development, Staffbase documents using `http://localhost:9000/chevron.staffbase-custom-widget.js` while the local server runs; that URL only works on the developer's computer and depends on browser/network policy.
 
@@ -96,14 +75,14 @@ Or pipe one JSON item into `node scripts/extract-metadata.mjs`. The helper reads
 
 ```json
 [
-  { "language": "en_US", "taxonomyId": "CVX-2026-001", "mediaTaxonomies": [] }
+  { "language": "en_US", "taxonomyId": "CVX-2026-001" }
 ]
 ```
 
 - No widget: `taxonomyId: null`.
 - Duplicate widgets, an invalid/missing attribute, or missing HTML: a descriptive error and nonzero CLI exit code.
 - HTML entities are decoded using a real HTML parser. Scripts and resource URLs are never executed or loaded.
-- The story taxonomy is a plain string and media entries are a JSON string, matching this widget's explicit `parseConfig`/`parseAttributes` implementation. They are not Base64-encoded.
+- The story taxonomy is a plain string, matching this widget's explicit `parseConfig`/`parseAttributes` implementation. They are not Base64-encoded.
 - List envelopes are not accepted: pass each full content item separately. Retain the source item's ID when joining the extracted values to analytics or other data.
 
 You can also import the helper from another Node.js integration (with `parse5` installed):

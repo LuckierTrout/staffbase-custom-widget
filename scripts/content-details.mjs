@@ -29,27 +29,6 @@ export function extractTaxonomyId(html) {
   return value;
 }
 
-/** Media assignments belong to this content item, not to the global file. */
-export function extractMediaTaxonomies(html) {
-  const widget = findWidget(html);
-  const raw = widget?.attrs.find(({ name }) => name === "media-taxonomies")?.value;
-  if (raw === undefined) return [];
-  let entries;
-  try { entries = JSON.parse(raw); }
-  catch { throw new Error("Invalid media-taxonomies JSON."); }
-  if (!Array.isArray(entries)) throw new Error("media-taxonomies must be an array.");
-  const seen = new Set();
-  return entries.map(entry => {
-    if (!entry || typeof entry.mediaId !== "string" || !/^[^\s]+$/.test(entry.mediaId) || [...entry.mediaId].length > 256 ||
-        typeof entry.taxonomyId !== "string" || !entry.taxonomyId.trim() || [...entry.taxonomyId].length > 256) {
-      throw new Error("Each media entry needs a valid mediaId and taxonomyId.");
-    }
-    if (seen.has(entry.mediaId)) throw new Error(`Duplicate mediaId: ${entry.mediaId}. Keep one entry per photo/video.`);
-    seen.add(entry.mediaId);
-    return { mediaId: entry.mediaId, taxonomyId: entry.taxonomyId };
-  });
-}
-
 /** Accept one News/Pages item with contents.<language>.content. */
 export function extractContentDetails(item) {
   if (!item || typeof item !== "object" || !item.contents ||
@@ -61,7 +40,7 @@ export function extractContentDetails(item) {
       throw new TypeError(`Missing HTML content for language ${language}. Use the full content response.`);
     }
     try {
-      return { language, taxonomyId: extractTaxonomyId(translation.content), mediaTaxonomies: extractMediaTaxonomies(translation.content) };
+      return { language, taxonomyId: extractTaxonomyId(translation.content) };
     } catch (error) {
       throw new Error(`${language}: ${error.message}`, { cause: error });
     }

@@ -1,6 +1,6 @@
 {
   "name": "@chevron/staffbase-custom-widget",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Editor-only taxonomy metadata for Staffbase news and pages",
   "scripts": {
     "start": "webpack serve --open --config webpack.dev.ts",

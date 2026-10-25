@@ -9,7 +9,7 @@ export default tseslint.config(
   ...tseslint.configs.recommended,
   eslintConfigPrettier,
   {
-    ignores: ["node_modules/**", "coverage/**", "dist/**"],
+    ignores: ["node_modules/**", "coverage/**", "dist/**", "docs/chevron.staffbase-custom-widget.js"],
   },
   {
     files: ["**/*.ts", "**/*.tsx"],

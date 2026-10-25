@@ -18,21 +18,6 @@ export const configurationSchema: JSONSchema7 = {
   type: "object",
   required: ["taxonomy-id"],
   properties: {
-    "media-taxonomies": {
-      type: "array",
-      title: "Photos and videos in this story",
-      description: "Add one entry for each photo or video you want to tag. These IDs apply only within this story or page.",
-      default: [],
-      uniqueItems: true,
-      items: {
-        type: "object",
-        required: ["mediaId", "taxonomyId"],
-        properties: {
-          mediaId: { type: "string", title: "Staffbase Media ID", minLength: 1, maxLength: 256, pattern: "^[^\\s]+$" },
-          taxonomyId: { type: "string", title: "Media Taxonomy ID", minLength: 1, maxLength: 256, pattern: "\\S" },
-        },
-      },
-    },
     "taxonomy-id": {
       type: "string",
       title: "Taxonomy ID",
@@ -44,14 +29,7 @@ export const configurationSchema: JSONSchema7 = {
 };
 
 export const uiSchema: UiSchema = {
-  "ui:order": ["taxonomy-id", "media-taxonomies"],
-  "media-taxonomies": {
-    "ui:options": { orderable: false },
-    items: {
-      mediaId: { "ui:help": "Use the file's ID from the Staffbase Media API, not its filename or URL. Each Media ID should appear only once here." },
-      taxonomyId: { "ui:placeholder": "CVX-PHOTO-001" },
-    },
-  },
+  "ui:order": ["taxonomy-id"],
   "taxonomy-id": {
     "ui:placeholder": "CVX-2026-001",
     "ui:help": "Enter the taxonomy ID for this story or page. It is hidden from readers but remains in the page data. Use one Content Details widget per language version.",

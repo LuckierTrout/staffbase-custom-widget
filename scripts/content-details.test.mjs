@@ -2,7 +2,7 @@ import process from "node:process";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { execFileSync, spawnSync } from "node:child_process";
-import { extractTaxonomyId, extractMediaTaxonomies, extractContentDetails } from "./content-details.mjs";
+import { extractTaxonomyId, extractContentDetails } from "./content-details.mjs";
 
 const html = (value) => `<staffbase-custom-widget taxonomy-id="${value}"></staffbase-custom-widget>`;
 
@@ -27,7 +27,7 @@ test("rejects duplicate, empty, missing and oversized values", () => {
 test("keeps translations separate and explicitly reports missing widgets", () => {
   assert.deepEqual(extractContentDetails({ contents: {
     en_US: { content: html("ID-1") }, de_DE: { content: "<p>No metadata</p>" },
-  } }), [{ language: "en_US", taxonomyId: "ID-1", mediaTaxonomies: [] }, { language: "de_DE", taxonomyId: null, mediaTaxonomies: [] }]);
+  } }), [{ language: "en_US", taxonomyId: "ID-1" }, { language: "de_DE", taxonomyId: null }]);
   assert.throws(() => extractContentDetails({ data: [] }), /contents object/);
   assert.throws(() => extractContentDetails({ contents: { en_US: { title: "Only a summary" } } }), /full content/);
 });
@@ -43,22 +43,4 @@ test("CLI handles files, stdin and invalid input", () => {
   assert.equal(bad.status, 1);
   assert.equal(bad.stdout, "");
   assert.match(bad.stderr, /Extraction failed/);
-});
-
-const mediaHtml = entries => `<staffbase-custom-widget taxonomy-id="STORY" media-taxonomies="${JSON.stringify(entries).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;")}"></staffbase-custom-widget>`;
-
-test("extracts individual photo/video mappings separately from the story taxonomy", () => {
-  const media = [{mediaId:"photo-1", taxonomyId:"000123"}, {mediaId:"video-1", taxonomyId:'R&D "東京"'}];
-  assert.deepEqual(extractMediaTaxonomies(mediaHtml(media)), media);
-  assert.deepEqual(extractContentDetails({contents:{en_US:{content:mediaHtml(media)}}}), [{language:"en_US", taxonomyId:"STORY", mediaTaxonomies:media}]);
-  assert.deepEqual(extractMediaTaxonomies(html("LEGACY")), []);
-  assert.deepEqual(extractMediaTaxonomies(mediaHtml([])), []);
-});
-
-test("rejects malformed or ambiguous media mappings", () => {
-  for (const entries of [null, {}, [{mediaId:"photo-1"}], [{mediaId:"bad id",taxonomyId:"T"}], [{mediaId:"photo-1",taxonomyId:" "}]]) {
-    assert.throws(() => extractMediaTaxonomies(mediaHtml(entries)));
-  }
-  assert.throws(() => extractMediaTaxonomies(mediaHtml([{mediaId:"same",taxonomyId:"A"},{mediaId:"same",taxonomyId:"B"}])), /Duplicate mediaId/);
-  assert.throws(() => extractMediaTaxonomies('<staffbase-custom-widget media-taxonomies="oops"></staffbase-custom-widget>'), /Invalid media-taxonomies JSON/);
 });

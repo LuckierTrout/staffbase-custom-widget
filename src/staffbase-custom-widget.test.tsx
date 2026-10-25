@@ -28,7 +28,7 @@ test("hides the host and its decorations for readers; restores it in the editor"
   expect(widget.getAttribute("taxonomy-id")).toBe("CVX-001");
   widget.renderBlockInEditor(container);
   expect(widget).toBeVisible();
-  expect(container).toHaveTextContent("Editor only");
+  expect(container).toHaveTextContent("Taxonomy ID: CVX-001");
 });
 
 test.each(["000123", "false", 'R&D "東京" <img src=x onerror=alert(1)>'])
@@ -57,37 +57,5 @@ test("clearing removes old values; an empty editor preview remains actionable", 
   expect(widget).toHaveTextContent("Set a Taxonomy ID");
   expect(widget.parseAttributes()["taxonomy-id"]).toBe("");
   widget.unmountBlock(widget);
-  expect(widget).toBeEmptyDOMElement();
-});
-
-
-test("media entries survive serialization, reopening, editing and removing the last entry", () => {
-  const widget = createWidget();
-  document.body.append(widget);
-  const entries = [{mediaId:"photo-1",taxonomyId:"000123"},{mediaId:"video-1",taxonomyId:'R&D "東京" <img src=x>'}];
-  const config = widget.parseConfig({"taxonomy-id":"STORY", "media-taxonomies":entries});
-  Object.entries(config).forEach(([key,value]) => widget.setAttribute(key,value));
-  const template = document.createElement("template");
-  template.innerHTML = widget.outerHTML;
-  const restored = template.content.firstElementChild! as BaseBlock;
-  document.body.append(restored);
-  expect(restored.parseAttributes()["media-taxonomies"]).toEqual(entries);
-  restored.renderBlockInEditor(restored);
-  expect(restored).toHaveTextContent("Media photo-1 → Taxonomy ID: 000123");
-  expect(restored.querySelector("img")).toBeNull();
-  restored.renderBlock(restored);
-  expect(restored).not.toBeVisible();
-  expect(restored).toBeEmptyDOMElement();
-  restored.setAttribute("media-taxonomies", restored.parseConfig({"media-taxonomies":[]})["media-taxonomies"]);
-  expect(restored.parseAttributes()["media-taxonomies"]).toEqual([]);
-});
-
-test("malformed media data is reported without exposing it to readers", () => {
-  const widget = createWidget();
-  widget.setAttribute("media-taxonomies", "broken");
-  expect(() => widget.parseAttributes()).toThrow();
-  widget.renderBlockInEditor(widget);
-  expect(widget).toHaveTextContent("Saved media details are invalid");
-  widget.renderBlock(widget);
   expect(widget).toBeEmptyDOMElement();
 });

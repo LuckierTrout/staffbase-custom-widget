@@ -1,0 +1,135 @@
+CHEVRON CONTENT DETAILS: TAXONOMY ID DATA HANDOFF
+Prepared October 16, 2026
+
+Purpose and status
+------------------
+The widget lets an editor attach one Taxonomy ID to a Staffbase news article
+or page, per language version. Its reader rendering is hidden. The ID remains
+in the underlying content, so it is not confidential storage.
+
+Local rendering, string preservation, and extraction have been tested. The
+widget has previously been inserted into an unsaved Staffbase article. Saving,
+reopening, and retrieving a real News/Page API response remain unverified.
+All examples below are illustrative, not captured corporate content.
+
+How the value travels
+---------------------
+1. An editor inserts Chevron Content Details and enters a Taxonomy ID.
+2. The widget serializes the value into its taxonomy-id HTML attribute.
+3. The editor saves the containing article or page through Staffbase.
+4. A downstream integration retrieves the full content item through Staffbase's
+   API using an authorized API token with access to that item.
+5. The integration parses each language's HTML, extracts taxonomy-id, and joins
+   it to the Staffbase content ID for reporting or taxonomy enrichment.
+
+The widget does not send data directly to a warehouse or run a background sync.
+It does not add a native top-level taxonomyId field to Staffbase's API. Engineers
+must implement retrieval, extraction, and downstream storage. Fetch scheduling
+or event-driven ingestion is outside the current widget implementation.
+
+Source contract
+---------------
+Widget element: staffbase-custom-widget
+HTML attribute: taxonomy-id
+Value type: string; preserve leading zeros, case, punctuation, and Unicode.
+Validation: 1-256 characters; must contain a non-whitespace character.
+The current implementation preserves surrounding whitespace rather than trimming.
+Use one widget per language version. The widget does not enforce global ID
+uniqueness, taxonomy membership, or insertion into every content item.
+
+Example HTML:
+<staffbase-custom-widget taxonomy-id="000123"></staffbase-custom-widget>
+
+Documented full-item endpoints:
+  News:  GET /api/posts/{postID}
+  Pages: GET /api/pages/{pageId}
+
+Expected HTML location in both response types:
+  contents.<language>.content
+For example:
+  contents.en_US.content
+
+Illustrative response fragment:
+{
+  "id": "example-content-id",
+  "contents": {
+    "en_US": {
+      "content": "<staffbase-custom-widget taxonomy-id=\"000123\"></staffbase-custom-widget>"
+    }
+  }
+}
+
+The documented APIs return localized HTML. Whether the custom element and its
+attribute survive saving in the deployed editor must be verified, including
+Content Designer Pages where applicable. Do not assume a list/summary endpoint
+contains the full body, or that an API response represents the editor's current
+unsaved draft. Verify draft versus published-version behavior for the endpoint.
+
+Extraction helper
+-----------------
+The local project includes scripts/content-details.mjs and
+scripts/extract-metadata.mjs. From the project directory, with dependencies
+installed, run:
+
+  node scripts/extract-metadata.mjs /absolute/path/to/response.json
+
+Supply one full item, not a list envelope. The helper parses HTML using parse5,
+decodes HTML entities, and never executes scripts or loads linked resources.
+It returns one record per language:
+
+  [{ "language": "en_US", "taxonomyId": "000123" }]
+
+The helper itself does not include the content ID. Retain it from the source
+item. A proposed downstream record is:
+
+  {
+    "contentType": "news",
+    "contentId": "example-content-id",
+    "language": "en_US",
+    "taxonomyId": "000123"
+  }
+
+Use contentType + contentId + language as the mapping key. Taxonomy ID is a
+classification value, not an automatically generated unique record identifier.
+The integration can use it to join to the organization's taxonomy lookup table.
+
+Missing and changed values
+--------------------------
+- No widget: the helper returns taxonomyId: null.
+- Widget present but ID missing, whitespace-only, or too long: extraction fails.
+- Multiple widgets in a language: extraction fails rather than choosing one.
+- Missing or non-string content HTML: extraction fails rather than implying the
+  widget is absent. The CLI exits nonzero with a descriptive error.
+- On an updated item, replace the previous mapping with the current value.
+- On a successfully fetched full body with no widget, clear the old mapping.
+  Do not clear mappings merely because retrieval failed or access was denied.
+- Handle content deletion and translation removal in the ingestion pipeline.
+- Do not coerce IDs to numbers; "000123" must remain "000123".
+
+Required acceptance test before production ingestion
+----------------------------------------------------
+Using an explicitly approved test article and test page:
+1. Save Taxonomy ID 000123; reopen settings and confirm the exact string.
+2. Retrieve the corresponding full API response and confirm the attribute exists.
+3. Run the helper and confirm it returns 000123 for the intended language.
+4. Change to CVX-002, save, retrieve again, and confirm the mapping updates.
+5. Remove the widget, save, retrieve again, and confirm taxonomyId becomes null.
+6. Verify reader invisibility in the actual desktop/mobile presentation and test
+   the page editor and translation workflows the organization uses.
+If Staffbase strips or transforms the attribute, revise the integration before
+claiming this approach is ready for production.
+
+Scope and delivery
+------------------
+Current scope: story/page Taxonomy ID only. Photo/video tagging was removed;
+Staffbase Email is not implemented by this widget or extraction helper.
+The local bundle URL is for testing on the computer running the server. Shared
+deployment requires hosting the production bundle at an accessible HTTPS URL.
+This handoff describes the current local source; earlier GitHub release artifacts
+may contain the older media-tagging implementation.
+
+References
+----------
+News API: https://developers.staffbase.com/api/api-news/
+Pages API: https://developers.staffbase.com/api/api-pages/
+Widget framework: https://developers.staffbase.com/frameworks/customwidget-development/

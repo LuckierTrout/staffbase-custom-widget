@@ -12,7 +12,7 @@
  */
 
 import type { ExternalBlockDefinition } from "@staffbase/widget-sdk";
-import { factory, MEDIA_ATTRIBUTE, TAXONOMY_ATTRIBUTE, WIDGET_NAME } from "./staffbase-custom-widget";
+import { factory, TAXONOMY_ATTRIBUTE, WIDGET_NAME } from "./staffbase-custom-widget";
 import { configurationSchema, uiSchema } from "./configuration-schema";
 import icon from "../resources/staffbase-custom-widget.svg";
 import pkg from "../package.json";
@@ -21,7 +21,7 @@ const definition: ExternalBlockDefinition = {
   blockDefinition: {
     name: WIDGET_NAME,
     factory,
-    attributes: [TAXONOMY_ATTRIBUTE, MEDIA_ATTRIBUTE],
+    attributes: [TAXONOMY_ATTRIBUTE],
     blockLevel: "block",
     configurationSchema,
     uiSchema,

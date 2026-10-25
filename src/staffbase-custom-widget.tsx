@@ -14,19 +14,6 @@
 import type { BlockFactory } from "@staffbase/widget-sdk";
 
 export const WIDGET_NAME = "staffbase-custom-widget";
-export const MEDIA_ATTRIBUTE = "media-taxonomies";
-export interface MediaTaxonomy { mediaId: string; taxonomyId: string; }
-
-export function readMediaTaxonomies(raw: string | null): MediaTaxonomy[] {
-  if (raw === null) return [];
-  const entries: unknown = JSON.parse(raw);
-  if (!Array.isArray(entries) || entries.some(entry =>
-    !entry || typeof entry.mediaId !== "string" || !/^[^\s]+$/.test(entry.mediaId) || [...entry.mediaId].length > 256 ||
-    typeof entry.taxonomyId !== "string" || !entry.taxonomyId.trim() || [...entry.taxonomyId].length > 256
-  )) throw new Error("Invalid photo/video taxonomy entries. Each needs a Media ID and Taxonomy ID.");
-  return entries;
-}
-
 export const TAXONOMY_ATTRIBUTE = "taxonomy-id";
 
 /** Staffbase calls the reader and Studio preview hooks separately. */
@@ -34,15 +21,12 @@ export const factory: BlockFactory = (BaseBlockClass) => {
   return class ContentDetailsBlock extends BaseBlockClass {
     // Keep string IDs intact, including leading zeros and values like "false".
     public parseAttributes<T extends Record<string, unknown>>(): T {
-      return { [TAXONOMY_ATTRIBUTE]: this.getAttribute(TAXONOMY_ATTRIBUTE) ?? "", [MEDIA_ATTRIBUTE]: readMediaTaxonomies(this.getAttribute(MEDIA_ATTRIBUTE)) } as unknown as T;
+      return { [TAXONOMY_ATTRIBUTE]: this.getAttribute(TAXONOMY_ATTRIBUTE) ?? "" } as unknown as T;
     }
 
     public parseConfig<T extends Record<string, unknown>>(attributes: T): Record<string, string> {
       const value = attributes[TAXONOMY_ATTRIBUTE];
-      const media = attributes[MEDIA_ATTRIBUTE] ?? [];
-      const encoded = JSON.stringify(media);
-      readMediaTaxonomies(encoded);
-      return { [TAXONOMY_ATTRIBUTE]: typeof value === "string" ? value : "", [MEDIA_ATTRIBUTE]: encoded };
+      return { [TAXONOMY_ATTRIBUTE]: typeof value === "string" ? value : "" };
     }
 
     public renderBlock(container: HTMLElement): void {
@@ -61,27 +45,7 @@ export const factory: BlockFactory = (BaseBlockClass) => {
       const taxonomy = document.createElement("div");
       const value = this.getAttribute(TAXONOMY_ATTRIBUTE);
       taxonomy.textContent = value?.trim() ? `Taxonomy ID: ${value}` : "Set a Taxonomy ID in widget settings.";
-      const hint = document.createElement("div");
-      hint.textContent = "Editor only · Hidden from readers";
       preview.append(title, taxonomy);
-      try {
-        const entries = readMediaTaxonomies(this.getAttribute(MEDIA_ATTRIBUTE));
-        for (const entry of entries) {
-          const row = document.createElement("div");
-          row.textContent = `Media ${entry.mediaId} → Taxonomy ID: ${entry.taxonomyId}`;
-          preview.append(row);
-        }
-        if (new Set(entries.map(entry => entry.mediaId)).size !== entries.length) {
-          const warning = document.createElement("div");
-          warning.textContent = "Duplicate Media ID: keep one entry per photo/video before extracting data.";
-          preview.append(warning);
-        }
-      } catch {
-        const warning = document.createElement("div");
-        warning.textContent = "Saved media details are invalid. Restore valid media-taxonomies data before editing.";
-        preview.append(warning);
-      }
-      preview.append(hint);
       container.replaceChildren(preview);
     }
 
@@ -91,7 +55,7 @@ export const factory: BlockFactory = (BaseBlockClass) => {
     }
 
     public static get observedAttributes(): string[] {
-      return [TAXONOMY_ATTRIBUTE, MEDIA_ATTRIBUTE];
+      return [TAXONOMY_ATTRIBUTE];
     }
 
     public attributeChangedCallback(...args: [string, string | undefined, string | undefined]): void {
