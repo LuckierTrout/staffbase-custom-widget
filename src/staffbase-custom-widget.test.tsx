@@ -59,3 +59,23 @@ test("clearing removes old values; an empty editor preview remains actionable", 
   widget.unmountBlock(widget);
   expect(widget).toBeEmptyDOMElement();
 });
+
+test("editor reminder changes from red to green and back when the value is removed", () => {
+  const widget = createWidget();
+  const container = document.createElement("div");
+  for (const value of [null, "", "   ", "000123", ""]) {
+    if (value === null) widget.removeAttribute("taxonomy-id");
+    else widget.setAttribute("taxonomy-id", value);
+    widget.renderBlockInEditor(container);
+    if (value === "000123") {
+      expect(container).toHaveTextContent("Taxonomy ID added");
+      expect(container).toHaveTextContent("Taxonomy ID: 000123");
+      expect(container.firstElementChild).toHaveStyle({ background: "#f0fdf4", color: "#166534" });
+    } else {
+      expect(container).toHaveTextContent("Taxonomy ID missing");
+      expect(container).toHaveTextContent("Set a Taxonomy ID in widget settings before publishing.");
+      expect(container.firstElementChild).toHaveStyle({ background: "#fef2f2", color: "#991b1b" });
+      expect(container).not.toHaveTextContent("000123");
+    }
+  }
+});

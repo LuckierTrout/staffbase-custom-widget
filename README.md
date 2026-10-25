@@ -26,6 +26,8 @@ In the published view, the widget hides its host and clears its rendering contai
 
 This is visually hidden metadata, not confidential storage. Readers with access to the content may inspect its underlying HTML. Do not enter secrets.
 
+The editor preview is red and says **Taxonomy ID missing** when the value is absent or whitespace-only. It turns green and displays **Taxonomy ID added** and the literal value when filled in. Green indicates presence, not validation against a taxonomy catalog. This reminder only appears where the widget is already inserted; the settings dialog still requires a value.
+
 Photo/video taxonomy tagging is deferred. This version exposes only the story/page Taxonomy ID.
 
 ## Build and install

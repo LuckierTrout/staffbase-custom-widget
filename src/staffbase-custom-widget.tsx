@@ -38,13 +38,14 @@ export const factory: BlockFactory = (BaseBlockClass) => {
     public renderBlockInEditor(container: HTMLElement): void {
       // A saved hidden host must become selectable again in the editor.
       this.style.removeProperty("display");
-      const preview = document.createElement("div");
-      preview.style.cssText = "padding:12px 16px;border:1px dashed #64748b;border-radius:4px;background:#f8fafc;color:#243746;font:14px/1.5 Arial,sans-serif";
-      const title = document.createElement("strong");
-      title.textContent = "Chevron Content Details";
-      const taxonomy = document.createElement("div");
       const value = this.getAttribute(TAXONOMY_ATTRIBUTE);
-      taxonomy.textContent = value?.trim() ? `Taxonomy ID: ${value}` : "Set a Taxonomy ID in widget settings.";
+      const hasValue = Boolean(value?.trim());
+      const preview = document.createElement("div");
+      preview.style.cssText = `padding:12px 16px;border:2px solid ${hasValue ? "#15803d" : "#b91c1c"};border-radius:4px;background:${hasValue ? "#f0fdf4" : "#fef2f2"};color:${hasValue ? "#166534" : "#991b1b"};font:14px/1.5 Arial,sans-serif`;
+      const title = document.createElement("strong");
+      title.textContent = hasValue ? "Chevron Content Details — Taxonomy ID added" : "Chevron Content Details — Taxonomy ID missing";
+      const taxonomy = document.createElement("div");
+      taxonomy.textContent = hasValue ? `Taxonomy ID: ${value}` : "Set a Taxonomy ID in widget settings before publishing.";
       preview.append(title, taxonomy);
       container.replaceChildren(preview);
     }
